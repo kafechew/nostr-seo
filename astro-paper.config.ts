@@ -2,14 +2,14 @@ import { defineAstroPaperConfig } from "./src/types/config";
 
 export default defineAstroPaperConfig({
   site: {
-    url: "https://astro-paper.pages.dev/",
+    url: "https://www.kheai.com",
     title: "AstroPaper",
-    description: "A minimal, responsive and SEO-friendly Astro blog theme.",
-    author: "Sat Naing",
-    profile: "https://satna.ing",
+    description: "A zero-maintenance Web3-to-Web2 bridge that fetches decentralized Nostr articles (Kind 30023) at build time and compiles them into a blazingly fast, SEO-perfect static website.",
+    author: "Khe Ai",
+    profile: "https://www.linkedin.com/in/kheai",
     ogImage: "default-og.jpg",
     lang: "en",
-    timezone: "Asia/Bangkok",
+    timezone: "Asia/Kuala_Lumpur",
     dir: "ltr",
   },
   posts: {
@@ -24,15 +24,15 @@ export default defineAstroPaperConfig({
     showBackButton: true,
     editPost: {
       enabled: true,
-      url: "https://github.com/satnaing/astro-paper/edit/main/",
+      url: "https://github.com/kafechew/nostr-seo/edit/main/",
     },
     search: "pagefind",
   },
   socials: [
-    { name: "github",   url: "https://github.com/satnaing/astro-paper" },
-    { name: "x",        url: "https://x.com/username" },
-    { name: "linkedin", url: "https://www.linkedin.com/in/username/" },
-    { name: "mail",     url: "mailto:yourmail@gmail.com" },
+    { name: "github",   url: "https://github.com/kafechew/nostr-seo" },
+    { name: "x",        url: "https://x.com/kafechew" },
+    { name: "linkedin", url: "https://www.linkedin.com/in/kheai/" },
+    { name: "mail",     url: "mailto:kheaichew@gmail.com" },
   ],
   shareLinks: [
     { name: "whatsapp", url: "https://wa.me/?text=" },
