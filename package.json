@@ -31,6 +31,7 @@
     "tailwindcss": "^4.3.0"
   },
   "devDependencies": {
+    "esbuild-wasm": "0.28.0",
     "@astrojs/check": "^0.9.9",
     "@pagefind/default-ui": "^1.5.2",
     "@shikijs/transformers": "^4.0.2",
@@ -44,5 +45,8 @@
     "prettier-plugin-astro": "0.14.1",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "typescript": "^6.0.3"
+  },
+  "overrides": {
+    "esbuild": "npm:esbuild-wasm@0.28.0"
   }
 }
