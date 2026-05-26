@@ -1,0 +1,15 @@
+name: Nostr Auto-Sync
+
+on:
+  schedule:
+    # Runs every 6 hours automatically
+    - cron: '0 */6 * * *'
+  workflow_dispatch: # This adds a manual "Run" button in GitHub
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Vercel Build
+        run: |
+          curl -X POST "https://api.vercel.com/v1/integrations/deploy/prj_6IPE5QnHqTXK7fsPNWxNLmBYzaHF/qPIGTqmOJR"
