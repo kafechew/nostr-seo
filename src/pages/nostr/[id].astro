@@ -1,0 +1,53 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+import NDK from "@nostr-dev-kit/ndk";
+import 'ws';
+import { marked } from "marked";
+
+// getStaticPaths tells Astro to pre-build a page for EVERY article you've ever written on Nostr
+export async function getStaticPaths() {
+  const ndk = new NDK({ 
+    explicitRelayUrls: ["wss://relay.damus.io", "wss://nos.lol"] 
+  });
+  await ndk.connect();
+  
+  const events = await ndk.fetchEvents({ 
+    kinds: [30023], 
+    authors: ["444275c14d69c9e5b0caa6fd0863bb69042b10d9e31a84a377e255d2e00fd05c"] // <-- PUT YOUR HEX KEY HERE
+  });
+
+  // Filter out any events missing a timestamp so Astro doesn't build broken pages
+  return Array.from(events)
+    .filter((e): e is typeof e & { created_at: number } => e.created_at !== undefined)
+    .map(e => {
+      return {
+        params: { id: e.id },
+        props: { event: e } // Pass the raw event data to the page
+      };
+    });
+}
+
+const { event } = Astro.props;
+
+// Parse Nostr Markdown into HTML
+const contentHtml = marked.parse(event.content);
+const title = event.tags.find(t => t[0] === 'title')?.[1] || "Untitled";
+
+// TypeScript Fix: Use the nullish coalescing operator (?? 0) to guarantee a number. 
+// Because we filtered it above, it will never actually hit 0.
+const timestamp = event.created_at ?? 0;
+const date = new Date(timestamp * 1000).toLocaleDateString('zh-CN');
+---
+
+<Layout title={title}>
+  <Header />
+  <main id="main-content" class="mx-auto w-full max-w-3xl px-4 pb-12 mt-8">
+    <h1 class="text-3xl font-bold text-skin-accent">{title}</h1>
+    <p class="text-sm opacity-80 mt-2 mb-8">{date}</p>
+    
+    <article class="prose max-w-none prose-img:border-0" set:html={contentHtml} />
+  </main>
+  <Footer />
+</Layout>
