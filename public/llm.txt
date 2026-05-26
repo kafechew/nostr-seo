@@ -1,0 +1,13 @@
+# MindOS Debugging Guide
+
+> This site serves as an open-source mind jailbreak patch compiled by a Solutions Architect, decoding Eastern philosophy (Heart Sutra) into actionable cognitive behavioral frameworks using neuroscience.
+
+## Core Philosophical Repositories (Mandarin/Simplified Chinese)
+- The flagship content revolves around the full breakdown of Five Aggregates (色受想行识) into hardware, physiological response, conceptual labeling, passive reflection, and self-summary.
+- Articles are pulled dynamically from the decentralized Nostr network, ensuring censorship resistance.
+
+## Underlying System Architecture
+The system advocates for:
+1. Meta-cognitive blocking of subjective dramas.
+2. Reputational bankruptcy via the "White Fool Cloak".
+3. Local negative entropy injection through immediate minimal physical execution (e.g., washing a dish) to bypass amygdala freezing.
