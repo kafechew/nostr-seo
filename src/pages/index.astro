@@ -2,10 +2,10 @@
 import Layout from "@/layouts/Layout.astro";
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
-import NDK from "@nostr-dev-kit/ndk";
+// Explicitly import the NDKEvent type
+import NDK, { type NDKEvent } from "@nostr-dev-kit/ndk";
 import 'ws'; 
 
-// 1. Initialize NDK with reliable relays
 const ndk = new NDK({ 
   explicitRelayUrls: [
     "wss://relay.damus.io", 
@@ -14,24 +14,44 @@ const ndk = new NDK({
     "wss://relay.nostr.band"
   ] 
 });
-await ndk.connect();
 
-// 2. Fetch long-form blog posts (Kind 30023)
+try {
+  console.log("⏳ [Nostr] Connecting to relays...");
+  await ndk.connect(3000); 
+  console.log("✨ [Nostr] Connected successfully!");
+} catch (err) {
+  console.error("❌ [Nostr] Connection timed out or failed, proceeding anyway:", err);
+}
+
 const filter = { 
   kinds: [30023], 
-  authors: ["444275c14d69c9e5b0caa6fd0863bb69042b10d9e31a84a377e255d2e00fd05c"] // <-- PUT YOUR HEX KEY HERE
+  authors: ["444275c14d69c9e5b0caa6fd0863bb69042b10d9e31a84a377e255d2e00fd05c"]
 };
 
-// 3. Process the data & Clean up SEO metadata
-const events = await ndk.fetchEvents(filter);
+// Strongly type the Set so TypeScript knows these are Nostr events
+let events: Set<NDKEvent> = new Set();
+
+try {
+  console.log("⏳ [Nostr] Fetching events from relays...");
+  
+  // Use Promise.race to enforce a strict 4-second timeout that TypeScript understands
+  const fetchPromise = ndk.fetchEvents(filter, { closeOnEose: true });
+  const timeoutPromise = new Promise<Set<NDKEvent>>((resolve) => {
+    setTimeout(() => resolve(new Set()), 4000);
+  });
+  
+  events = await Promise.race([fetchPromise, timeoutPromise]);
+  console.log(`✅ [Nostr] Successfully fetched ${events.size} events!`);
+} catch (err) {
+  console.error("❌ [Nostr] Fetching encountered an error:", err);
+}
 
 const posts = Array.from(events)
-  .filter((e): e is typeof e & { created_at: number } => e.created_at !== undefined)
+  // Tell TypeScript: If it passes this filter, it is an NDKEvent AND it has a valid created_at number
+  .filter((e): e is NDKEvent & { created_at: number } => e.created_at !== undefined)
   .sort((a, b) => b.created_at - a.created_at)
   .map(e => {
     const rawContent = e.content;
-    
-    // REGEX PATCH: Strip markdown symbols so Chinese/English summaries are perfectly clean for Web2 Spiders
     const cleanContent = rawContent
       .replace(/[#*`_~\[\]\(\)-]/g, "") 
       .replace(/\s+/g, " ")
@@ -39,8 +59,9 @@ const posts = Array.from(events)
 
     return {
       id: e.id,
-      title: e.tags.find(t => t[0] === 'title')?.[1] || "Untitled Mind-Log",
-      summary: e.tags.find(t => t[0] === 'summary')?.[1] || (cleanContent.substring(0, 120) + "..."),
+      // Explicitly type 't' as an array of strings
+      title: e.tags.find((t: string[]) => t[0] === 'title')?.[1] || "Untitled Mind-Log",
+      summary: e.tags.find((t: string[]) => t[0] === 'summary')?.[1] || (cleanContent.substring(0, 120) + "..."),
       date: new Date(e.created_at * 1000).toLocaleDateString('zh-CN', {
         year: 'numeric', month: 'long', day: 'numeric'
       })

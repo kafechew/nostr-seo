@@ -2,43 +2,70 @@
 import Layout from "@/layouts/Layout.astro";
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
-import NDK from "@nostr-dev-kit/ndk";
+// Explicitly import the NDKEvent type
+import NDK, { type NDKEvent } from "@nostr-dev-kit/ndk";
 import 'ws';
 import { marked } from "marked";
 
-// getStaticPaths tells Astro to pre-build a page for EVERY article you've ever written on Nostr
 export async function getStaticPaths() {
   const ndk = new NDK({ 
     explicitRelayUrls: ["wss://relay.damus.io", "wss://nos.lol"] 
   });
-  await ndk.connect();
   
-  const events = await ndk.fetchEvents({ 
-    kinds: [30023], 
-    authors: ["444275c14d69c9e5b0caa6fd0863bb69042b10d9e31a84a377e255d2e00fd05c"] // <-- PUT YOUR HEX KEY HERE
-  });
+  try {
+    console.log("⏳ [Nostr Dynamic] Connecting to relays...");
+    await ndk.connect(3000);
+  } catch (e) {
+    console.error("❌ [Nostr Dynamic] Connection timeout:", e);
+  }
+  
+  // Strongly type the Set
+  let events: Set<NDKEvent> = new Set();
+  
+  try {
+    console.log("⏳ [Nostr Dynamic] Fetching events for routing...");
+    const filter = { 
+      kinds: [30023], 
+      authors: ["444275c14d69c9e5b0caa6fd0863bb69042b10d9e31a84a377e255d2e00fd05c"]
+    };
+    
+    // Type-safe timeout logic
+    const fetchPromise = ndk.fetchEvents(filter, { closeOnEose: true });
+    const timeoutPromise = new Promise<Set<NDKEvent>>((resolve) => {
+      setTimeout(() => resolve(new Set()), 4000);
+    });
 
-  // Filter out any events missing a timestamp so Astro doesn't build broken pages
+    events = await Promise.race([fetchPromise, timeoutPromise]);
+    console.log(`✅ [Nostr Dynamic] Routes prepared for ${events.size} posts.`);
+  } catch (e) {
+    console.error("❌ [Nostr Dynamic] Fetching timeout:", e);
+  }
+
   return Array.from(events)
-    .filter((e): e is typeof e & { created_at: number } => e.created_at !== undefined)
+    // Same type guard applying NDKEvent
+    .filter((e): e is NDKEvent & { created_at: number } => e.created_at !== undefined)
     .map(e => {
       return {
         params: { id: e.id },
-        props: { event: e } // Pass the raw event data to the page
+        props: { event: e }
       };
     });
 }
 
+// Tell Astro what structure to expect in Astro.props
+interface Props {
+  event: NDKEvent;
+}
 const { event } = Astro.props;
 
-// Parse Nostr Markdown into HTML
 const contentHtml = marked.parse(event.content);
-const title = event.tags.find(t => t[0] === 'title')?.[1] || "Untitled";
+// Explicitly type 't' as an array of strings
+const title = event.tags.find((t: string[]) => t[0] === 'title')?.[1] || "Untitled";
 
-// TypeScript Fix: Use the nullish coalescing operator (?? 0) to guarantee a number. 
-// Because we filtered it above, it will never actually hit 0.
 const timestamp = event.created_at ?? 0;
-const date = new Date(timestamp * 1000).toLocaleDateString('zh-CN');
+const date = new Date(timestamp * 1000).toLocaleDateString('zh-CN', {
+  year: 'numeric', month: 'long', day: 'numeric'
+});
 ---
 
 <Layout title={title}>
