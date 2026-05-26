@@ -1,37 +1,37 @@
 ---
 title: "About"
-description: "A bit about me and this blog."
+description: "The architecture and philosophy behind this decentralized content pipeline."
 ---
 
-AstroPaper is a minimal, accessible and SEO-friendly blog theme built with [Astro](https://astro.build/) and [Tailwind CSS](https://tailwindcss.com/).
+Welcome to my digital workbench. 
 
-![Astro Paper](@/assets/images/astropaper-og.jpg)
+This site is not a traditional blog. It is an open-source mind jailbreak patch, a static mirror of thoughts published natively and immutably to the decentralized **Nostr** network. 
 
-AstroPaper provides a solid foundation for blogs, or even portfolios\_ with full markdown support, built-in dark mode, and a clean layout that works out-of-the-box.
+## The Philosophy: Mind-OS Debugging
 
-The blog posts in this theme also serve as guides, docs or example articles\_ making AstroPaper a flexible starting point for your next content-driven site.
+The core focus of this repository is decoding Eastern philosophy—specifically frameworks like the Heart Sutra—into actionable cognitive behavioral protocols using modern neuroscience. 
 
-## Features
+Here, we explore the "Five Aggregates" (色受想行识) not as mystical concepts, but as system hardware, physiological responses, and conceptual labeling. The ultimate goal is:
+* **Meta-cognitive blocking** of subjective dramas.
+* **Reputational bankruptcy** via the "White Fool Cloak."
+* **Local negative entropy injection** through immediate physical execution to bypass amygdala freezing.
 
-AstroPaper comes with a set of useful features that make content publishing easy and effective:
+## The Architecture: Write Once, Read Everywhere
 
-- SEO-friendly
-- Fast performance
-- Light & dark mode
-- Highly customizable
-- Organizable blog posts
-- Responsive & accessible
-- Static search with [PageFind](https://pagefind.app/)
-- Automatic social image generation
+The infrastructure powering this site is a zero-maintenance Web3-to-Web2 bridge:
 
-and so much more.
+1. **The Input:** All articles are written and signed cryptographically on decentralized Nostr clients (like Yakihonne). I own the private keys; no centralized server can delete or alter the database.
+2. **The Engine:** A GitHub Actions pipeline automatically sweeps the Nostr relays every few hours, looking for my specific cryptographic signature (Kind 30023 events).
+3. **The Output:** The raw data is compiled at build-time using Astro into the blazingly fast, SEO-optimized static HTML you are reading right now.
 
-## Show your support
+It is designed for perfect machine readability—whether you are a human using a browser, a Baidu/Google search spider, or an AI agent scraping the semantic layer.
 
-If you like [AstroPaper](https://github.com/satnaing/astro-paper), consider giving it a star ⭐️.
+## Connect on Nostr
 
-Found a bug 🐛 or have an improvement ✨ in mind? Feel free to open an [issue](https://github.com/satnaing/astro-paper/issues), submit a [pull request](https://github.com/satnaing/astro-paper/pulls) or start a [discussion](https://github.com/satnaing/astro-paper/discussions).
+Because this is a decentralized protocol, you don't need to subscribe to an email newsletter to follow my work. You can find and interact with me directly on the Nostr network.
 
-If you find this theme helpful, you can also [sponsor me on GitHub](https://github.com/sponsors/satnaing) or [buy me a coffee](https://buymeacoffee.com/satnaing) to show your support — every penny counts.
+**My Public Key:**
+[`npub1g3p8ts2dd8y7tvx25m7sscamdyzzkyxeuvdgfgmhuf2a9cq06pwq0c6m7d`](https://yakihonne.com/profile/nprofile1qqsygsn4c9xknj09kr92dlggvwakjpptzrv7xx5y5dm7y4wjuq8aqhqcs9vax) 
+*(Hex: `444275c14d69c9e5b0caa6fd0863bb69042b10d9e31a84a377e255d2e00fd05c`)*
 
-Kyay zuu! 🙏🏼
+Drop the `npub` into your preferred client (Primal, Damus, Yakihonne, or Habla) to connect.
