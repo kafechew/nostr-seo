@@ -1,137 +1,86 @@
 ---
-import { getCollection } from "astro:content";
-import { getRelativeLocaleUrl } from "astro:i18n";
-import IconRss from "@/assets/icons/IconRss.svg";
-import IconArrowRight from "@/assets/icons/IconArrowRight.svg";
 import Layout from "@/layouts/Layout.astro";
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
-import Socials from "@/components/Socials.astro";
-import Card from "@/components/Card.astro";
-import LinkButton from "@/components/LinkButton.astro";
-import { getSortedPosts } from "@/utils/getSortedPosts";
-import { useTranslations } from "@/i18n";
-import config from "@/config";
+import NDK from "@nostr-dev-kit/ndk";
+import 'ws'; 
 
-const { socials, posts: postsConfig } = config;
+// 1. Initialize NDK with reliable relays
+const ndk = new NDK({ 
+  explicitRelayUrls: [
+    "wss://relay.damus.io", 
+    "wss://nos.lol",
+    "wss://relay.primal.net",
+    "wss://relay.nostr.band"
+  ] 
+});
+await ndk.connect();
 
-const locale = Astro.currentLocale ?? config.site.lang;
-const t = useTranslations(locale);
+// 2. Fetch long-form blog posts (Kind 30023)
+const filter = { 
+  kinds: [30023], 
+  authors: ["444275c14d69c9e5b0caa6fd0863bb69042b10d9e31a84a377e255d2e00fd05c"] // <-- PUT YOUR HEX KEY HERE
+};
 
-const posts = await getCollection("posts");
-const sortedPosts = getSortedPosts(posts);
-const featuredPosts = sortedPosts.filter(({ data }) => data.featured);
-const recentPosts = sortedPosts.filter(({ data }) => !data.featured);
-const homePath = getRelativeLocaleUrl(locale, "");
+// 3. Process the data & Clean up SEO metadata
+const events = await ndk.fetchEvents(filter);
+
+const posts = Array.from(events)
+  .filter((e): e is typeof e & { created_at: number } => e.created_at !== undefined)
+  .sort((a, b) => b.created_at - a.created_at)
+  .map(e => {
+    const rawContent = e.content;
+    
+    // REGEX PATCH: Strip markdown symbols so Chinese/English summaries are perfectly clean for Web2 Spiders
+    const cleanContent = rawContent
+      .replace(/[#*`_~\[\]\(\)-]/g, "") 
+      .replace(/\s+/g, " ")
+      .trim();
+
+    return {
+      id: e.id,
+      title: e.tags.find(t => t[0] === 'title')?.[1] || "Untitled Mind-Log",
+      summary: e.tags.find(t => t[0] === 'summary')?.[1] || (cleanContent.substring(0, 120) + "..."),
+      date: new Date(e.created_at * 1000).toLocaleDateString('zh-CN', {
+        year: 'numeric', month: 'long', day: 'numeric'
+      })
+    };
+  });
 ---
 
-<Layout>
+<Layout title="My Decentralized Mind-Dump">
   <Header />
-  <main
-    id="main-content"
-    data-layout="index"
-    data-home-path={homePath}
-    class="app-layout"
-  >
+  
+  <main id="main-content" class="app-layout">
+    
     <section id="hero" class="border-border border-b pt-8 pb-6">
       <h1 class="my-4 inline-block text-4xl font-bold sm:my-8 sm:text-5xl">
-        Mingalaba
+        My Nostr Mind-Dump
       </h1>
-      <a
-        target="_blank"
-        href={getRelativeLocaleUrl(locale, "rss.xml")}
-        class="inline-block"
-        aria-label="RSS Feed"
-        title="RSS Feed"
-      >
-        <IconRss
-          width={20}
-          height={20}
-          class="stroke-accent scale-125 stroke-3 rtl:-rotate-90"
-        />
-        <span class="sr-only">RSS Feed</span>
-      </a>
-
       <p>
-        AstroPaper is a minimal, responsive, accessible and SEO-friendly Astro
-        blog theme. This theme follows best practices and provides accessibility
-        out of the box. Light and dark mode are supported by default. Moreover,
-        additional color schemes can also be configured.
+        These notes are pulled dynamically from the decentralized Nostr protocol at build time, 
+        resulting in 100% static, SEO-perfect HTML. Write on Yakihonne, read everywhere.
       </p>
-      <p class="mt-2">
-        Read the blog posts or check
-        <LinkButton
-          class="hover:text-accent underline decoration-dashed underline-offset-4"
-          href="https://github.com/satnaing/astro-paper#readme"
-        >
-          README
-        </LinkButton> for more info.
-      </p>
-      {
-        socials.length > 0 && (
-          <div class="mt-4 flex max-sm:flex-col sm:items-center">
-            <div class="me-2 mb-1 whitespace-nowrap sm:mb-0">
-              {t.home.socialLinks}:
-            </div>
-            <Socials />
-          </div>
-        )
-      }
     </section>
 
-    {
-      featuredPosts.length > 0 && (
-        <section
-          id="featured"
-          class:list={[
-            "pt-12 pb-6",
-            { "border-border border-b": recentPosts.length > 0 },
-          ]}
-        >
-          <h2 class="text-2xl font-semibold tracking-wide">
-            {t.home.featured}
-          </h2>
-          <ul>
-            {featuredPosts.map(data => (
-              <Card variant="h3" {...data} />
-            ))}
-          </ul>
-        </section>
-      )
-    }
-
-    {
-      recentPosts.length > 0 && (
-        <section id="recent-posts" class="pt-12 pb-6">
-          <h2 class="text-2xl font-semibold tracking-wide">
-            {t.home.recentPosts}
-          </h2>
-          <ul>
-            {recentPosts.slice(0, postsConfig.perIndex).map(data => (
-              <Card variant="h3" {...data} />
-            ))}
-          </ul>
-        </section>
-      )
-    }
-
-    <div class="my-8 text-center">
-      <LinkButton href={getRelativeLocaleUrl(locale, "posts")}>
-        {t.home.allPosts}
-        <IconArrowRight class="inline-block rtl:-rotate-180" />
-      </LinkButton>
-    </div>
+    <section id="recent-posts" class="pt-12 pb-6">
+      <h2 class="text-2xl font-semibold tracking-wide mb-6">
+        Recent Notes
+      </h2>
+      
+      <ul>
+        {posts.map(post => (
+          <li class="my-6">
+            <a href={`/nostr/${post.id}`} class="inline-block text-xl font-bold text-skin-accent decoration-dashed underline-offset-4 hover:underline">
+              {post.title}
+            </a>
+            <div class="text-sm opacity-80 mt-1">{post.date}</div>
+            <p class="mt-2 line-clamp-3">{post.summary}</p>
+          </li>
+        ))}
+        {posts.length === 0 && <p>No articles found on the relays yet.</p>}
+      </ul>
+    </section>
   </main>
   <Footer />
 </Layout>
-
-<script>
-  document.addEventListener("astro:page-load", () => {
-    const indexLayout = (document.querySelector("#main-content") as HTMLElement)
-      ?.dataset;
-    const baseRoot = import.meta.env.BASE_URL.replace(/\/?$/, "/");
-    if (indexLayout?.layout) {
-      sessionStorage.setItem("backUrl", indexLayout.homePath ?? baseRoot);
-    }
-  });
-</script>
