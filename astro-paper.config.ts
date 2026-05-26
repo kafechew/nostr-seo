@@ -3,7 +3,7 @@ import { defineAstroPaperConfig } from "./src/types/config";
 export default defineAstroPaperConfig({
   site: {
     url: "https://www.kheai.com",
-    title: "AstroPaper",
+    title: "KheAi",
     description: "A zero-maintenance Web3-to-Web2 bridge that fetches decentralized Nostr articles (Kind 30023) at build time and compiles them into a blazingly fast, SEO-perfect static website.",
     author: "Khe Ai",
     profile: "https://www.linkedin.com/in/kheai",
