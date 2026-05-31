@@ -35,3 +35,28 @@
 :target {
   scroll-margin-block: 1rem;
 }
+
+/* KaTeX Math Styling */
+.katex-display {
+  @apply my-8 overflow-x-auto overflow-y-hidden py-4 px-2;
+  background-color: rgba(255, 255, 255, 0.03);
+  border-radius: 0.5rem;
+}
+
+/* Fix for small screens math scrolling */
+.katex {
+  white-space: nowrap;
+}
+
+/* Image styling for Nostr attachments */
+#article img {
+  @apply rounded-xl border shadow-md mx-auto my-8;
+  /* Use the variable directly to fix the "unknown utility" error */
+  border-color: var(--color-line); 
+}
+
+/* Mermaid Diagram Container */
+.mermaid-container {
+  @apply flex justify-center p-4 rounded-lg my-8 overflow-x-auto;
+  background-color: rgba(255, 255, 255, 0.05);
+}
