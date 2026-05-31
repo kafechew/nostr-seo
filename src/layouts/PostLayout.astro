@@ -33,7 +33,7 @@ const dateStr = new Date(pubDatetime).toLocaleDateString('en-US', {
 });
 ---
 
-<Layout title={title} author={author} description={description} ogImage={ogImage}>
+<Layout title={title} description={description} ogImage={ogImage}>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
@@ -41,13 +41,6 @@ const dateStr = new Date(pubDatetime).toLocaleDateString('en-US', {
   />
 
   <Header />
-  
-  <div class="mx-auto flex w-full max-w-3xl justify-start px-2">
-    <button class="focus-outline mb-2 mt-8 flex hover:opacity-75" onclick="history.back()">
-      <svg xmlns="http://www.w3.org/2000/svg"><path d="M13.293 6.293 7.586 12l5.707 5.707 1.414-1.414L10.414 12l4.293-4.293z"></path></svg>
-      <span>Go back</span>
-    </button>
-  </div>
 
   <main id="main-content" class="mx-auto w-full max-w-3xl px-4 pb-12">
     <h1 class="text-3xl font-bold text-skin-accent">{title}</h1>
@@ -72,7 +65,9 @@ const dateStr = new Date(pubDatetime).toLocaleDateString('en-US', {
     <article id="article" role="article" class="prose prose-invert mt-8 max-w-none" set:html={htmlContent} />
 
     <ul class="my-8 flex flex-wrap gap-2">
-      {tags && tags.map((tag: string) => <Tag tag={tag} />)}
+      {tags && tags.map((tag: string) => (
+        <Tag tag={tag} tagName={tag} />
+      ))}
     </ul>
   </main>
 
@@ -84,7 +79,10 @@ const dateStr = new Date(pubDatetime).toLocaleDateString('en-US', {
     const codeBlocks = document.querySelectorAll("pre code.language-mermaid");
     if (codeBlocks.length === 0) return;
     try {
-      const { default: mermaid } = await import("https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs");
+      const { default: mermaid } = await import(
+        // @ts-ignore
+        "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs"
+      );
       mermaid.initialize({ startOnLoad: false, theme: "dark" });
       for (const element of codeBlocks) {
         const rawCode = element.textContent || "";
