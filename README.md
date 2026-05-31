@@ -1,87 +1,114 @@
-# 🕸️ Nostr-SEO: The Decentralized Content Pipeline
+# ⚡ Nostr-SEO: The Decentralized Content Bridge
 
 [![Live Demo](https://img.shields.io/badge/Live_Demo-kheai.com-00C7B7?style=for-the-badge)](https://www.kheai.com/)
 [![Built with Astro](https://img.shields.io/badge/Built_with-Astro-FF5D01?style=for-the-badge&logo=astro)](https://astro.build/)
 [![Powered by Nostr](https://img.shields.io/badge/Powered_by-Nostr-8241F8?style=for-the-badge)](https://nostr.com/)
 
-A zero-maintenance Web3-to-Web2 bridge that fetches decentralized Nostr articles (Kind 30023) at build time and compiles them into a blazingly fast, SEO-perfect static website. 
+**Nostr-SEO** is a high-performance, SEO-first bridge that transforms decentralized Nostr Long-form content (**Kind 30023**) into a lightning-fast, search-engine-optimized website. 
 
-Write once on Nostr clients like Yakihonne, Habla, or Primal. Read everywhere via Google, Baidu, and AI Search Agents.
+Built on top of the refined [Astro-Paper](https://github.com/satnaing/astro-paper) template, this project allows creators to use Nostr as a decentralized CMS while maintaining total ownership of their web presence and search engine rankings.
 
-## 🧠 The Philosophy
+---
 
-Traditional blogging platforms trap your content in centralized databases. Nostr fixes content ownership, but single-page application (SPA) Web3 clients often struggle with Web2 SEO and algorithmic discovery. 
+## 📖 The Problem & Solution
 
-**This pipeline solves both:**
+### The Problem
+Decentralized protocols like Nostr are amazing for censorship resistance, but their content is often "invisible" to traditional search engines. If you publish only on relays, you lose the benefits of **SEO (Search Engine Optimization)** and **AEO (Answer Engine Optimization)** for AI agents like Perplexity and ChatGPT.
 
-1. **Absolute Ownership:** You write natively on Nostr, retaining full control of your cryptographic keys and data.
-2. **Maximum Reach:** The pipeline statically renders your thoughts into lightweight HTML, optimizing them for traditional search spiders and modern AI web scrapers.
+### The Solution
+`nostr-seo` acts as a **Static Site Generator (SSG) for the Nostr protocol**. 
+1. **Fetch:** It pulls your articles from decentralized relays at build-time.
+2. **Process:** It cleans the Markdown, renders complex Math (LaTeX) and Diagrams (Mermaid).
+3. **Deploy:** It generates static HTML files that Google can index perfectly.
+4. **Automated Sync:** A GitHub Actions CRON job taps a Vercel deploy hook every 6 hours to pull fresh content automatically. 
 
-## ✨ Core Features
+---
 
-* **100% Static HTML:** Articles are fetched during the build step, resulting in zero client-side fetching delays and perfect Lighthouse scores.
-* **Automated Sync:** A GitHub Actions CRON job taps a Vercel deploy hook every 6 hours to pull fresh content automatically. 
-* **AI-Agent Ready:** Includes a dedicated `/llm.txt` endpoint providing a semantic layer for SearchGPT, Perplexity, and Claude to instantly understand the site's architecture and niche.
-* **Global SEO Patch:** Hardcoded `zh-CN` language targeting and regex markdown-stripping to ensure clean metadata summaries for Baidu and Google.
-* **Built on AstroPaper:** Inherits a minimal, accessible, and highly responsive UI theme with built-in dark mode.
+## 🚀 Key Features
 
-## 🏗️ System Architecture
+### 🛠 Technical Upgrades (v2.0)
+- **Mathematical Precision:** Full **LaTeX** support using KaTeX. Perfect for technical, financial, or scientific writing.
+- **Visual Logic:** Native **Mermaid.js** support. Render flowcharts and sequence diagrams directly from your Nostr notes.
+- **GFM Tables:** Professional, responsive styling for GitHub Flavored Markdown tables.
+- **NIP-19 Native:** Automatic generation of `naddr` identifiers for every post, enabling deep-linking back to the Nostr ecosystem.
+- **Web3 Social Proof:** Built-in "Open in App" links for **Damus**, **Amethyst**, **Yakihonne**, and **Primal**.
 
-1. **Input:** Author publishes a long-form note (Kind 30023) to Nostr relays (`wss://relay.damus.io`, `wss://nos.lol`, etc.).
-2. **Trigger:** GitHub Actions runs a scheduled workflow every 6 hours.
-3. **Build:** Vercel receives the webhook, spins up a Node.js environment, and uses `@nostr-dev-kit/ndk` to query the author's specific Hex Public Key.
-4. **Compile:** Astro maps the raw markdown to dynamic `[id].astro` routes, parses it to HTML via `marked`, and statically generates the site.
-5. **Serve:** High-speed static files are distributed globally via Vercel's Edge Network.
+### 🎨 Performance & Design
+- **100/100 Lighthouse Score:** Optimized for speed, accessibility, and SEO.
+- **Dynamic Content Pipeline:** Uses a custom `Unified` pipeline (`Remark` + `Rehype`) to process raw Nostr strings into secure HTML.
+- **Enhanced Readability:** Custom CSS contrast overrides for Dark Mode to ensure long-form content is easy on the eyes.
+- **Cover Image Support:** Automatic extraction and display of header images from Yakihonne/Nostr metadata.
 
-## 🚀 Quick Start (Fork & Deploy)
+---
 
-Want to build your own decentralized mind-dump? 
+## 🛠️ Installation & Setup
 
-### 1. Prerequisites
+### Prerequisites
+- Node.js (v18 or higher)
+- A Nostr Hex Pubkey
 
-* Node.js (v18+)
-* Your Nostr Hex Public Key (Convert your `npub` using a tool like [damus.io/key](https://damus.io/key)).
-
-### 2. Local Setup
-
-Clone this repository and install the dependencies:
-
+### 1. Clone & Install
 ```bash
-git clone [https://github.com/kafechew/nostr-seo.git](https://github.com/kafechew/nostr-seo.git)
+git clone https://github.com/kafechew/nostr-seo.git
 cd nostr-seo
-npm install
+npm install --legacy-peer-deps
 ```
+*Note: We use `--legacy-peer-deps` to handle specific version requirements of the Astro-Paper template.*
 
-### 3. Connect Your Identity
+### 2. Configure Your Feed
+Open `src/pages/nostr/[id].astro` (for individual posts) and `src/pages/index.astro` (for the homepage list). 
 
-Open `src/pages/index.astro` and `src/pages/nostr/[id].astro`. Find the NDK filter block and replace the placeholder with your own Hex Key:
-
+Find the `NDK` filter and replace the `authors` array with your **Hex Pubkey**:
 ```typescript
 const filter = { 
   kinds: [30023], 
-  authors: ["YOUR_HEX_KEY_HERE"] 
+  authors: ["YOUR_HEX_PUBKEY_HERE"] 
 };
 ```
 
-### 4. Test Locally
-
-Run the Astro dev server. It will fetch your latest articles from the relays and render them on `localhost`.
-
+### 3. Local Development
 ```bash
 npm run dev
 ```
 
-### 5. Automate the Pipeline
+### 4. Automate the Pipeline
 
 1. Deploy your forked repository to **Vercel** (override the build command to `npm install` if necessary).
 2. In Vercel, navigate to Settings > Git > Deploy Hooks. Create a hook named `Nostr-Sync` and copy the URL.
 3. In your GitHub repository, update the URL inside `.github/workflows/nostr-sync.yml` to point to your new Vercel webhook.
 
-## 📜 Credits & Stack
+---
 
-- Framework: [Astro](https://astro.build/)
-- UI Theme: [AstroPaper](https://github.com/satnaing/astro-paper) by satnaing
-- Nostr Integration: [@nostr-dev-kit/ndk](https://github.com/nostr-dev-kit/ndk)
-- Markdown Parsing: [marked](https://marked.js.org/)
+## 🏗️ Technical Architecture
 
-*Write once, syndicate everywhere. Welcome to the future of content publishing.
+- **Framework:** [Astro 4.x/5.x](https://astro.build/)
+- **Protocol Layer:** [NDK (Nostr Dev Kit)](https://github.com/nostr-dev-kit/ndk) for relay communication.
+- **Markdown Engine:** Custom pipeline using `remark-math`, `remark-gfm`, and `rehype-katex`.
+- **Identity:** Support for NIP-01 (Metadata) and NIP-19 (Identifiers).
+- **Deployment:** Optimized for Vercel/Netlify with **Incremental Static Regeneration (ISR)** support.
+
+---
+
+## 🗺️ Roadmap: The Future of Sovereign Marketing
+
+We are moving toward a full "Marketing Harness" for the value-for-value economy.
+
+### Phase 1: AI & Discovery (AEO)
+- [ ] **JSON-LD Injection:** Automatic Schema.org metadata for every post to improve indexing by AI Answer Engines.
+- [ ] **NIP-05 Verification:** Displaying "Verified" badges directly from the protocol.
+
+### Phase 2: Monetization & Automation
+- [ ] **L402 / Lightning Paywalls:** Gating high-value technical content (LaTeX/Research) behind small Sat payments for AI Agents.
+- [ ] **Zap-powered Comments:** Integrating Kind 9735 (Zaps) as a global, decentralized comment and "Like" system.
+
+### Phase 3: Workflow Harness
+- [ ] **Cross-Platform Syndication:** Automatically generating "Teaser" posts for X/Twitter and LinkedIn when a new Nostr post is detected.
+
+---
+
+## 🤝 Contributing
+This is an open-source project. If you find a bug or have a feature request for the Nostr ecosystem, please open an issue or a PR!
+
+## 📜 License
+MIT License - Created by [kafechew](https://github.com/kafechew)
+
