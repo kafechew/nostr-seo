@@ -79,6 +79,18 @@ const dateStr = new Date(pubDatetime).toLocaleDateString('en-US', {
       </div>
     )}
 
+    <!-- Cover Image Section -->
+    {ogImage && (
+      <div class="mt-8 w-full overflow-hidden rounded-xl border border-skin-line/50 shadow-lg">
+        <img 
+          src={ogImage} 
+          alt={`Cover image for ${title}`}
+          class="aspect-video w-full object-cover"
+          loading="eager"
+        />
+      </div>
+    )}
+
     <article id="article" role="article" class="prose prose-invert mt-8 max-w-none" set:html={htmlContent} />
 
     <ul class="my-8 flex flex-wrap gap-2">
