@@ -12,7 +12,7 @@ export interface Props {
   author?: string;
   description?: string;
   ogImage?: string;
-  canonicalURL?: string; // 👈 Added this to fix the Vercel error
+  canonicalURL?: string;
   pubDatetime?: Date;
   modDatetime?: Date | null;
   tags?: string[];
@@ -20,40 +20,38 @@ export interface Props {
 }
 
 const props = Astro.props;
-//const { post } = Astro.props;
 
-// Logic to determine if we are using the 'post' object (Nostr) or direct props (Local)
-const title = props.post?.title ?? props.title ?? "Untitled";
-const author = props.post?.author ?? props.author ?? "Nostr User";
-const description = props.post?.description ?? props.description;
-const ogImage = props.post?.ogImage ?? props.ogImage;
-const canonicalURL = props.post?.canonicalURL ?? props.canonicalURL; // 👈 Added this
-const pubDatetime = props.post?.pubDatetime ?? props.pubDatetime;
-const modDatetime = props.post?.modDatetime ?? props.modDatetime;
-const tags = props.post?.tags ?? props.tags;
-const naddr = props.post?.naddr; 
-const content = props.post?.content ?? props.content ?? "";
+// Logic for metadata
+const title = props.title ?? props.post?.title ?? "Untitled";
+const author = props.author ?? props.post?.author ?? "KheAi";
+const description = props.description ?? props.post?.description;
+const ogImage = props.ogImage ?? props.post?.ogImage;
+const canonicalURL = props.canonicalURL ?? props.post?.canonicalURL;
+const pubDatetime = props.pubDatetime ?? props.post?.pubDatetime;
+const modDatetime = props.modDatetime ?? props.post?.modDatetime;
+const tags = props.tags ?? props.post?.tags;
+const naddr = props.post?.naddr;
+const content = props.content ?? props.post?.content;
 
-// Process Markdown
-const htmlContent = await parseNostrMarkdown(content);
+// Only parse Nostr markdown if content string exists
+const htmlContent = content ? await parseNostrMarkdown(content) : null;
 
-// Simple Date Formatting
-const dateStr = new Date(pubDatetime).toLocaleDateString('en-US', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-});
+const dateStr = pubDatetime
+  ? new Date(pubDatetime).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
+  : "";
 ---
 
-<!-- Pass canonicalURL to Layout so Vercel is happy -->
-<Layout 
-  title={title} 
-  description={description} 
-  ogImage={ogImage} 
+<Layout
+  title={title}
+  description={description}
+  ogImage={ogImage}
   canonicalURL={canonicalURL}
 >
-  <!-- 👈 Inject the AEO Metadata -->
-  <PostMetadata 
+  <PostMetadata
     title={title}
     description={description}
     pubDatetime={pubDatetime}
@@ -63,6 +61,8 @@ const dateStr = new Date(pubDatetime).toLocaleDateString('en-US', {
     canonicalURL={canonicalURL}
     naddr={naddr}
   />
+
+  {/* FIX: Moved KaTeX here so it works for BOTH Markdown and Nostr */}
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
@@ -71,58 +71,99 @@ const dateStr = new Date(pubDatetime).toLocaleDateString('en-US', {
 
   <Header />
 
-  <main id="main-content" class="mx-auto w-full max-w-3xl px-4 pb-12">
-    <h1 class="text-3xl font-bold text-skin-accent">{title}</h1>
-    
-    <div class="flex items-center space-x-2 opacity-80 my-2 text-sm">
-      <svg xmlns="http://www.w3.org/2000/svg" class="scale-90 inline-block h-6 w-6 fill-skin-base" aria-hidden="true"><path d="M7 11h2v2H7zm0 4h2v2H7zm4-4h2v2h-2zm0 4h2v2h-2zm4-4h2v2h-2zm0 4h2v2h-2z"></path><path d="M5 22h14c1.103 0 2-.897 2-2V6c0-1.103-.897-2-2-2h-2V2h-2v2H9V2H7v2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2zM19 8l.001 12H5V8h14z"></path></svg>
-      <span>{dateStr}</span>
-      <!-- 👈 Using 'author' here fixes the "declared but never read" warning -->
-      <span class="px-2 italic">by {author}</span>
-    </div>
-    
-    {naddr && (
-      <div class="mt-6 flex flex-wrap items-center gap-3 text-xs md:text-sm bg-skin-card/10 p-4 rounded-lg border border-skin-line/50">
-        <span class="font-bold text-skin-base flex items-center gap-1">⚡ Nostr:</span>
-        <a href={`nostr:${naddr}`} class="text-skin-accent hover:underline font-medium">Open in App</a>
-        <span class="opacity-20">|</span>
-        <a href={`https://yakihonne.com/article/${naddr}`} target="_blank" rel="noopener" class="hover:text-skin-accent opacity-80">Yakihonne</a>
-        <span class="opacity-20">|</span>
-        <a href={`https://primal.net/e/${naddr}`} target="_blank" rel="noopener" class="hover:text-skin-accent opacity-80">Primal</a>
-      </div>
-    )}
+  {
+    htmlContent ? (
+      /* NOSTR ARTICLE VIEW */
+      <main id="main-content" class="mx-auto w-full max-w-3xl px-4 pb-12">
+        <h1 class="text-skin-accent text-3xl font-bold">{title}</h1>
+        <div class="my-2 flex items-center space-x-2 text-sm opacity-80">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="fill-skin-base inline-block h-6 w-6 scale-90"
+            aria-hidden="true"
+          >
+            <>
+              <path d="M7 11h2v2H7zm0 4h2v2H7zm4-4h2v2h-2zm0 4h2v2h-2zm4-4h2v2h-2zm0 4h2v2h-2z" />
+              <path d="M5 22h14c1.103 0 2-.897 2-2V6c0-1.103-.897-2-2-2h-2V2h-2v2H9V2H7v2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2zM19 8l.001 12H5V8h14z" />
+            </>
+          </svg>
+          <span>{dateStr}</span>
+          <span class="px-2 italic">by {author}</span>
+        </div>
 
-    <!-- Cover Image Section -->
-    {ogImage && (
-      <div class="mt-8 w-full overflow-hidden rounded-xl border border-skin-line/50 shadow-lg">
-        <img 
-          src={ogImage} 
-          alt={`Cover image for ${title}`}
-          class="aspect-video w-full object-cover"
-          loading="eager"
-        />
-      </div>
-    )}
+        {naddr && (
+          <div class="bg-skin-card/10 border-skin-line/50 mt-6 flex flex-wrap items-center gap-3 rounded-lg border p-4 text-xs md:text-sm">
+            <span class="text-skin-base flex items-center gap-1 font-bold">
+              ⚡ Nostr:
+            </span>
+            <a
+              href={`nostr:${naddr}`}
+              class="text-skin-accent font-medium hover:underline"
+            >
+              Open in App
+            </a>
+            <span class="opacity-20">|</span>
+            <a
+              href={`https://yakihonne.com/article/${naddr}`}
+              target="_blank"
+              rel="noopener"
+              class="hover:text-skin-accent opacity-80"
+            >
+              Yakihonne
+            </a>
+            <span class="opacity-20">|</span>
+            <a
+              href={`https://primal.net/e/${naddr}`}
+              target="_blank"
+              rel="noopener"
+              class="hover:text-skin-accent opacity-80"
+            >
+              Primal
+            </a>
+          </div>
+        )}
 
-    <article id="article" role="article" class="prose prose-invert mt-8 max-w-none" set:html={htmlContent} />
+        {/* FIX: RESTORED COVER IMAGE FOR NOSTR */}
+        {ogImage && (
+          <div class="border-skin-line/50 mt-8 w-full overflow-hidden rounded-xl border shadow-lg">
+            <img
+              src={ogImage}
+              alt={title}
+              class="aspect-video w-full object-cover"
+              loading="eager"
+            />
+          </div>
+        )}
 
-    <ul class="my-8 flex flex-wrap gap-2">
-      {tags && tags.map((tag: string) => <Tag tag={tag} tagName={tag} />)}
-    </ul>
-  </main>
+        <article id="article" class="app-prose mt-8" set:html={htmlContent} />
+
+        <ul class="mt-12 flex list-none flex-wrap gap-2 p-0">
+          {tags &&
+            tags.map((tag: string) => (
+              <li class="m-0 p-0 before:content-none">
+                <Tag tag={tag} tagName={tag} />
+              </li>
+            ))}
+        </ul>
+      </main>
+    ) : (
+      /* MARKDOWN BLOG VIEW */
+      <slot />
+    )
+  }
 
   <Footer />
 </Layout>
 
 <script>
+  // @ts-nocheck
   const renderMermaid = async () => {
     const codeBlocks = document.querySelectorAll("pre code.language-mermaid");
     if (codeBlocks.length === 0) return;
     try {
-      const { default: mermaid } = await import(
-        // @ts-ignore
-        "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs"
-      );
+      const url =
+        "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+      const { default: mermaid } = await import(/* @vite-ignore */ url);
       mermaid.initialize({ startOnLoad: false, theme: "dark" });
       for (const element of codeBlocks) {
         const rawCode = element.textContent || "";
@@ -130,13 +171,15 @@ const dateStr = new Date(pubDatetime).toLocaleDateString('en-US', {
         const { svg } = await mermaid.render(id, rawCode);
         const container = element.parentElement;
         if (container) {
-          const wrapper = document.createElement('div');
-          wrapper.className = 'mermaid-container'; 
+          const wrapper = document.createElement("div");
+          wrapper.className = "mermaid-container";
           wrapper.innerHTML = svg;
           container.replaceWith(wrapper);
         }
       }
-    } catch (e) { console.error("Mermaid diagram failed:", e); }
+    } catch (e) {
+      console.error("Mermaid diagram failed:", e);
+    }
   };
   renderMermaid();
   document.addEventListener("astro:after-swap", renderMermaid);

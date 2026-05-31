@@ -9,7 +9,7 @@ export function formatNostrEvent(event: any) {
 
   // 1. Get the 'd' tag (the identifier)
   const dTag = getTagValue("d");
-  
+
   // 2. Generate naddr
   let naddr = "";
   if (dTag) {
@@ -26,18 +26,19 @@ export function formatNostrEvent(event: any) {
 
   // 3. Clean up the description for SEO
   const summary = getTagValue("summary");
-  const fallbackDesc = event.content
-    .replace(/!\[.*?\]\(.*?\)/g, "") 
-    .replace(/\[(.*?)\]\(.*?\)/g, "$1") 
-    .replace(/(?:__|[*#`\[\]()\-+!=])/g, "")
-    .substring(0, 160)
-    .trim() + "...";
+  const fallbackDesc =
+    event.content
+      .replace(/!\[.*?\]\(.*?\)/g, "")
+      .replace(/\[(.*?)\]\(.*?\)/g, "$1")
+      .replace(/(?:__|[*#`\[\]()\-+!=])/g, "")
+      .substring(0, 160)
+      .trim() + "...";
 
   return {
     id: event.id, // Hex ID for the URL
     naddr: naddr, // NIP-19 for the links
     title: getTagValue("title") || "Untitled Nostr Post",
-    author: getTagValue("author") || "Nostr User",
+    author: getTagValue("author") || "KheAi",
     description: summary || fallbackDesc,
     pubDatetime: new Date(event.created_at * 1000),
     modDatetime: null,

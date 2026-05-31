@@ -4,26 +4,35 @@ import { formatNostrEvent } from "../../utils/formatNostrEvent";
 import NDK, { type NDKEvent } from "@nostr-dev-kit/ndk";
 
 export async function getStaticPaths() {
-  const ndk = new NDK({ explicitRelayUrls: ["wss://relay.damus.io", "wss://nos.lol"] });
+  const ndk = new NDK({
+    explicitRelayUrls: ["wss://relay.damus.io", "wss://nos.lol"],
+  });
   await ndk.connect(2000);
-  
-  const filter = { 
-    kinds: [30023], 
-    authors: ["444275c14d69c9e5b0caa6fd0863bb69042b10d9e31a84a377e255d2e00fd05c"]
+
+  const filter = {
+    kinds: [30023],
+    authors: [
+      "444275c14d69c9e5b0caa6fd0863bb69042b10d9e31a84a377e255d2e00fd05c",
+    ],
   };
-  
+
   const events = await ndk.fetchEvents(filter, { closeOnEose: true });
 
   return Array.from(events)
-    .filter((e): e is NDKEvent & { created_at: number } => e.created_at !== undefined)
+    .filter(
+      (e): e is NDKEvent & { created_at: number } => e.created_at !== undefined
+    )
     .map(e => ({
-        params: { id: e.id },
-        props: { rawEvent: e }
+      params: { id: e.id },
+      props: { rawEvent: e },
     }));
 }
 
 const { rawEvent } = Astro.props;
-const post = formatNostrEvent(rawEvent); // This generates naddr and cleans data
+const post = formatNostrEvent(rawEvent);
+
+// FIX 3: Manually set the author name here for your Nostr events
+const authorName = "Khe Ai";
 ---
 
-<PostLayout post={post} />
+<PostLayout post={post} author={authorName} />
