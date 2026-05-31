@@ -6,12 +6,12 @@ import Tag from "../components/Tag.astro";
 import { parseNostrMarkdown } from "../utils/parseMarkdown";
 
 export interface Props {
-  // Allow either a 'post' object OR individual properties
   post?: any;
   title?: string;
   author?: string;
   description?: string;
   ogImage?: string;
+  canonicalURL?: string; // 👈 Added this to fix the Vercel error
   pubDatetime?: Date;
   modDatetime?: Date | null;
   tags?: string[];
@@ -21,14 +21,15 @@ export interface Props {
 const props = Astro.props;
 
 // Logic to determine if we are using the 'post' object (Nostr) or direct props (Local)
-const title = props.post?.title ?? props.title;
-const author = props.post?.author ?? props.author;
+const title = props.post?.title ?? props.title ?? "Untitled";
+const author = props.post?.author ?? props.author ?? "Nostr User";
 const description = props.post?.description ?? props.description;
 const ogImage = props.post?.ogImage ?? props.ogImage;
+const canonicalURL = props.post?.canonicalURL ?? props.canonicalURL; // 👈 Added this
 const pubDatetime = props.post?.pubDatetime ?? props.pubDatetime;
 const modDatetime = props.post?.modDatetime ?? props.modDatetime;
 const tags = props.post?.tags ?? props.tags;
-const naddr = props.post?.naddr; // Only exists on Nostr posts
+const naddr = props.post?.naddr; 
 const content = props.post?.content ?? props.content ?? "";
 
 // Process Markdown
@@ -42,7 +43,13 @@ const dateStr = new Date(pubDatetime).toLocaleDateString('en-US', {
 });
 ---
 
-<Layout title={title} description={description} ogImage={ogImage}>
+<!-- Pass canonicalURL to Layout so Vercel is happy -->
+<Layout 
+  title={title} 
+  description={description} 
+  ogImage={ogImage} 
+  canonicalURL={canonicalURL}
+>
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
@@ -50,14 +57,22 @@ const dateStr = new Date(pubDatetime).toLocaleDateString('en-US', {
   />
 
   <Header />
+  
+  <div class="mx-auto flex w-full max-w-3xl justify-start px-2">
+    <button class="focus-outline mb-2 mt-8 flex hover:opacity-75" onclick="history.back()">
+      <svg xmlns="http://www.w3.org/2000/svg"><path d="M13.293 6.293 7.586 12l5.707 5.707 1.414-1.414L10.414 12l4.293-4.293z"></path></svg>
+      <span>Go back</span>
+    </button>
+  </div>
 
   <main id="main-content" class="mx-auto w-full max-w-3xl px-4 pb-12">
     <h1 class="text-3xl font-bold text-skin-accent">{title}</h1>
     
-    <!-- Simple replacement for the Datetime component -->
     <div class="flex items-center space-x-2 opacity-80 my-2 text-sm">
       <svg xmlns="http://www.w3.org/2000/svg" class="scale-90 inline-block h-6 w-6 fill-skin-base" aria-hidden="true"><path d="M7 11h2v2H7zm0 4h2v2H7zm4-4h2v2h-2zm0 4h2v2h-2zm4-4h2v2h-2zm0 4h2v2h-2z"></path><path d="M5 22h14c1.103 0 2-.897 2-2V6c0-1.103-.897-2-2-2h-2V2h-2v2H9V2H7v2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2zM19 8l.001 12H5V8h14z"></path></svg>
       <span>{dateStr}</span>
+      <!-- 👈 Using 'author' here fixes the "declared but never read" warning -->
+      <span class="px-2 italic">by {author}</span>
     </div>
     
     {naddr && (
@@ -74,9 +89,7 @@ const dateStr = new Date(pubDatetime).toLocaleDateString('en-US', {
     <article id="article" role="article" class="prose prose-invert mt-8 max-w-none" set:html={htmlContent} />
 
     <ul class="my-8 flex flex-wrap gap-2">
-      {tags && tags.map((tag: string) => (
-        <Tag tag={tag} tagName={tag} />
-      ))}
+      {tags && tags.map((tag: string) => <Tag tag={tag} tagName={tag} />)}
     </ul>
   </main>
 
