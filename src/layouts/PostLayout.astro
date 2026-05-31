@@ -1,5 +1,6 @@
 ---
 import Layout from "./Layout.astro";
+import PostMetadata from "../components/PostMetadata.astro";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import Tag from "../components/Tag.astro";
@@ -19,6 +20,7 @@ export interface Props {
 }
 
 const props = Astro.props;
+//const { post } = Astro.props;
 
 // Logic to determine if we are using the 'post' object (Nostr) or direct props (Local)
 const title = props.post?.title ?? props.title ?? "Untitled";
@@ -50,6 +52,17 @@ const dateStr = new Date(pubDatetime).toLocaleDateString('en-US', {
   ogImage={ogImage} 
   canonicalURL={canonicalURL}
 >
+  <!-- 👈 Inject the AEO Metadata -->
+  <PostMetadata 
+    title={title}
+    description={description}
+    pubDatetime={pubDatetime}
+    modDatetime={modDatetime}
+    author={author}
+    ogImage={ogImage}
+    canonicalURL={canonicalURL}
+    naddr={naddr}
+  />
   <link
     rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"

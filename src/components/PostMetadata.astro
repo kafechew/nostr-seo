@@ -1,0 +1,58 @@
+---
+export interface Props {
+  title: string;
+  description: string;
+  pubDatetime: Date;
+  modDatetime?: Date | null;
+  author: string;
+  ogImage?: string;
+  canonicalURL?: string;
+  naddr?: string;
+}
+
+const { 
+  title, 
+  description, 
+  pubDatetime, 
+  modDatetime, 
+  author, 
+  ogImage, 
+  canonicalURL,
+  naddr 
+} = Astro.props;
+
+// Construct the JSON-LD object
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": title,
+  "description": description,
+  "image": ogImage ? [ogImage] : [],
+  "datePublished": pubDatetime.toISOString(),
+  "dateModified": modDatetime ? modDatetime.toISOString() : pubDatetime.toISOString(),
+  "author": [
+    {
+      "@type": "Person",
+      "name": author,
+      // If we had the npub, we could put a nostr: link here
+      "url": naddr ? `https://yakihonne.com/article/${naddr}` : canonicalURL
+    }
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": canonicalURL
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "KheAi",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://www.kheai.com/favicon.svg" // Replace with your actual domain
+    }
+  },
+  // Naddr as a unique identifier for decentralized attribution
+  "identifier": naddr || undefined
+};
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />
