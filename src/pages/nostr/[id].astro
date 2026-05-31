@@ -1,80 +1,29 @@
 ---
-import Layout from "@/layouts/Layout.astro";
-import Header from "@/components/Header.astro";
-import Footer from "@/components/Footer.astro";
-// Explicitly import the NDKEvent type
+import PostLayout from "../../layouts/PostLayout.astro";
+import { formatNostrEvent } from "../../utils/formatNostrEvent";
 import NDK, { type NDKEvent } from "@nostr-dev-kit/ndk";
-import 'ws';
-import { marked } from "marked";
 
 export async function getStaticPaths() {
-  const ndk = new NDK({ 
-    explicitRelayUrls: ["wss://relay.damus.io", "wss://nos.lol"] 
-  });
+  const ndk = new NDK({ explicitRelayUrls: ["wss://relay.damus.io", "wss://nos.lol"] });
+  await ndk.connect(2000);
   
-  try {
-    console.log("⏳ [Nostr Dynamic] Connecting to relays...");
-    await ndk.connect(3000);
-  } catch (e) {
-    console.error("❌ [Nostr Dynamic] Connection timeout:", e);
-  }
+  const filter = { 
+    kinds: [30023], 
+    authors: ["444275c14d69c9e5b0caa6fd0863bb69042b10d9e31a84a377e255d2e00fd05c"]
+  };
   
-  // Strongly type the Set
-  let events: Set<NDKEvent> = new Set();
-  
-  try {
-    console.log("⏳ [Nostr Dynamic] Fetching events for routing...");
-    const filter = { 
-      kinds: [30023], 
-      authors: ["444275c14d69c9e5b0caa6fd0863bb69042b10d9e31a84a377e255d2e00fd05c"]
-    };
-    
-    // Type-safe timeout logic
-    const fetchPromise = ndk.fetchEvents(filter, { closeOnEose: true });
-    const timeoutPromise = new Promise<Set<NDKEvent>>((resolve) => {
-      setTimeout(() => resolve(new Set()), 4000);
-    });
-
-    events = await Promise.race([fetchPromise, timeoutPromise]);
-    console.log(`✅ [Nostr Dynamic] Routes prepared for ${events.size} posts.`);
-  } catch (e) {
-    console.error("❌ [Nostr Dynamic] Fetching timeout:", e);
-  }
+  const events = await ndk.fetchEvents(filter, { closeOnEose: true });
 
   return Array.from(events)
-    // Same type guard applying NDKEvent
     .filter((e): e is NDKEvent & { created_at: number } => e.created_at !== undefined)
-    .map(e => {
-      return {
+    .map(e => ({
         params: { id: e.id },
-        props: { event: e }
-      };
-    });
+        props: { rawEvent: e }
+    }));
 }
 
-// Tell Astro what structure to expect in Astro.props
-interface Props {
-  event: NDKEvent;
-}
-const { event } = Astro.props;
-
-const contentHtml = marked.parse(event.content);
-// Explicitly type 't' as an array of strings
-const title = event.tags.find((t: string[]) => t[0] === 'title')?.[1] || "Untitled";
-
-const timestamp = event.created_at ?? 0;
-const date = new Date(timestamp * 1000).toLocaleDateString('zh-CN', {
-  year: 'numeric', month: 'long', day: 'numeric'
-});
+const { rawEvent } = Astro.props;
+const post = formatNostrEvent(rawEvent); // This generates naddr and cleans data
 ---
 
-<Layout title={title}>
-  <Header />
-  <main id="main-content" class="mx-auto w-full max-w-3xl px-4 pb-12 mt-8">
-    <h1 class="text-3xl font-bold text-skin-accent">{title}</h1>
-    <p class="text-sm opacity-80 mt-2 mb-8">{date}</p>
-    
-    <article class="prose max-w-none prose-img:border-0" set:html={contentHtml} />
-  </main>
-  <Footer />
-</Layout>
+<PostLayout post={post} />
